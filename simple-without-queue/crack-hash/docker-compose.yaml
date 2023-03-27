@@ -1,0 +1,29 @@
+version: "3.5"
+services:
+  worker:
+    container_name: crack-hash-worker
+    build:
+      context: ./ch-worker
+      dockerfile: Dockerfile
+    ports:
+      - "8081-8083:8081"
+    networks:
+      - crack-hash-network
+    environment:
+      MANAGER_URL: 'http://manager:8080'
+
+  manager:
+    container_name: crack-hash-manager
+    build:
+      context: ./ch-manager
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - crack-hash-network
+    environment:
+      WORKER_URL: 'http://worker:8081'
+
+networks:
+  crack-hash-network:
+    driver: bridge

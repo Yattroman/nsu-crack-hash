@@ -1,0 +1,8 @@
+server:
+  port: 8081
+
+app:
+  alphabet: "abcdefghijklmnopqrstuvwxyz1234567890"
+  communication:
+    manager:
+      address: ${MANAGER_URL:http://localhost:8080}

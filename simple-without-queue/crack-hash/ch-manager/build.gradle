@@ -1,0 +1,10 @@
+bootJar {
+    mainClass.value("ru.nsu.ccfit.CHManagerApplication")
+}
+
+dependencies {
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
