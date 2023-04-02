@@ -18,7 +18,7 @@ public class TimeoutStatusCheckTask implements Runnable {
         var taskStatus = crackHashInteractionService.getHashCrackingStatus(requestId);
         var taskStartTime = taskStatus.getStartTime().get();
         var currentTime = Instant.now();
-        var currentStatus = crackHashInteractionService.getHashCrackingStatus(requestId).getStatus().get();
+        var currentStatus = taskStatus.getStatus().get();
         if (currentTime.isAfter(taskStartTime.plusSeconds(ProcessingStatusData.TIMEOUT_SECONDS)) &&
                 currentStatus.equals(CrackStatus.IN_PROGRESS)) {
             crackHashInteractionService.changeHashCrackingStatus(requestId, CrackStatus.ERROR);

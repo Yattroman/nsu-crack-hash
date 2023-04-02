@@ -1,0 +1,102 @@
+version: "3.5"
+services:
+  worker-q:
+    build:
+      context: ./ch-worker
+      dockerfile: Dockerfile
+    ports:
+      - ${WORKER_PORT}
+    networks:
+      - crack-hash-network
+    deploy:
+      mode: replicated
+      replicas: 5
+    environment:
+      RABBITMQ_WORKER_TASK_GETTING_QUEUE: ${RABBITMQ_WORKER_TASK_GETTING_QUEUE}
+      RABBITMQ_WORKER_TASK_GETTING_EXCHANGE: ${RABBITMQ_WORKER_TASK_GETTING_EXCHANGE}
+      RABBITMQ_WORKER_TASK_GETTING_ROUTING: ${RABBITMQ_WORKER_TASK_GETTING_ROUTING}
+      RABBITMQ_MANAGER_TASK_RESULT_GETTING_EXCHANGE: ${RABBITMQ_MANAGER_TASK_RESULT_GETTING_EXCHANGE}
+      RABBITMQ_MANAGER_TASK_RESULT_GETTING_ROUTING: ${RABBITMQ_MANAGER_TASK_RESULT_GETTING_ROUTING}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+
+  manager-q:
+    build:
+      context: ./ch-manager
+      dockerfile: Dockerfile
+    ports:
+      - ${MANAGER_PORT}
+    networks:
+      - crack-hash-network
+    environment:
+      RABBITMQ_MANAGER_TASK_RESULT_GETTING_QUEUE: ${RABBITMQ_MANAGER_TASK_RESULT_GETTING_QUEUE}
+      RABBITMQ_MANAGER_TASK_RESULT_GETTING_EXCHANGE: ${RABBITMQ_MANAGER_TASK_RESULT_GETTING_EXCHANGE}
+      RABBITMQ_MANAGER_TASK_RESULT_GETTING_ROUTING: ${RABBITMQ_MANAGER_TASK_RESULT_GETTING_ROUTING}
+      RABBITMQ_WORKER_TASK_GETTING_ROUTING: ${RABBITMQ_WORKER_TASK_GETTING_ROUTING}
+      RABBITMQ_WORKER_TASK_GETTING_EXCHANGE: ${RABBITMQ_WORKER_TASK_GETTING_EXCHANGE}
+      WORKERS_NUMBER: ${CRACK_HASH_WORKERS_NUMBER}
+      CRACK_HASH_ALPHABET: ${CRACK_HASH_ALPHABET}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      MONGO_URI: ${MONGO_URI}
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management-alpine
+    ports:
+      - ${RABBIT_PORT1}
+      - ${RABBIT_PORT2}
+    networks:
+      - crack-hash-network
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - './volumes/rabbitmq/:/var/lib/rabbitmq/mnesia/'
+  mongo-db-primary:
+    container_name: mongo-db-primary
+    image: mongo:4.4
+    volumes:
+      - ./volumes/mongo/scripts:/scripts/
+      - ./volumes/mongo/data-p:/data/db
+    networks:
+      - crack-hash-network
+    ports:
+      - ${MONGO_PRIMARY_PORT}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    depends_on:
+      - mongo-db-secondary-1
+      - mongo-db-secondary-2
+    links:
+      - mongo-db-secondary-1
+      - mongo-db-secondary-2
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  mongo-db-secondary-1:
+    container_name: mongo-db-secondary-1
+    image: mongo:4.4
+    volumes:
+      - ./volumes/mongo/data-s-1:/data/db
+    networks:
+      - crack-hash-network
+    ports:
+      - ${MONGO_SECONDARY_PORT1}
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  mongo-db-secondary-2:
+    container_name: mongo-db-secondary-2
+    image: mongo:4.4
+    volumes:
+      - ./volumes/mongo/data-s-2:/data/db
+    networks:
+      - crack-hash-network
+    ports:
+      - ${MONGO_SECONDARY_PORT2}
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+networks:
+  crack-hash-network:
+    driver: bridge

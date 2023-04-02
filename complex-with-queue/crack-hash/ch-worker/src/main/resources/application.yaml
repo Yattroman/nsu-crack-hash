@@ -1,0 +1,29 @@
+server:
+  port: 8081
+
+app:
+  communication:
+    rabbitmq-config:
+      crack-hash-process:
+        task-exchange: ${RABBITMQ_WORKER_TASK_GETTING_EXCHANGE}
+        task-queue: ${RABBITMQ_WORKER_TASK_GETTING_QUEUE}
+        task-routing: ${RABBITMQ_WORKER_TASK_GETTING_ROUTING}
+        task-result-routing: ${RABBITMQ_MANAGER_TASK_RESULT_GETTING_ROUTING}
+        task-result-exchange: ${RABBITMQ_MANAGER_TASK_RESULT_GETTING_EXCHANGE}
+
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_DEFAULT_USER:guest}
+    password: ${RABBITMQ_DEFAULT_PASSWORD:guest}
+    listener:
+      direct:
+        auto-startup: true
+        retry:
+          initial-interval: 5000
+          max-attempts: 5
+          multiplier: 2
+          enabled: true
+          max-interval: 600000
+        default-requeue-rejected: true

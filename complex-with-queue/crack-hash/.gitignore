@@ -1,0 +1,10 @@
+/**/build
+/**/.gradle
+/**/*.iml
+/**/*.ipr
+/**/*.iws
+/**/gradle
+/et-config/src/main/resources/config/application-dev.yml
+/**/.idea
+/**/volumes/
+!/**/volumes/mongo/scripts/

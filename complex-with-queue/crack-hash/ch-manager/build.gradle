@@ -1,0 +1,11 @@
+bootJar {
+    mainClass.value("ru.nsu.ccfit.CHManagerApplication")
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:3.0.0'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
